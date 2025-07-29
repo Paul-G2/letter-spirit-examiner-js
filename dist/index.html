@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Examiner</title>
+		<link rel="stylesheet" href="./styles.css"/>	
+		
+		<script src="./LetterSpiritExaminer.js"></script>
+
+		<script type="text/javascript">	
+			async function main() { 
+				const app = new LetterSpirit.App({randSeed: 42});
+			}
+
+		</script>
+	</head>
+	
+	
+	<body onload="main()">
+		<div id="frame_area">
+			<div id="app_area">
+				<div id="topbar_area"></div>	
+				<div id="tray_area">
+					<div id="input_area"></div>
+					<div id="workspace_area"></div>
+					<div id="activations_area"></div>			
+					<div id="coderack_area"></div>
+				</div>	
+			</div>	
+		</div>
+	</body>
+</html>
