@@ -9476,7 +9476,7 @@ Namespace.UiUtils.RightsizeCanvas = function(canv)
         (canv.height != reqCanvasHeight) ) { 
             canv.width = reqCanvasWidth;  
             canv.height = reqCanvasHeight;
-            canv.getContext('2d').scale(dpr, dpr);
+            //canv.getContext('2d').scale(dpr, dpr);
             canv.setAttribute('width', reqCanvasWidth.toString() + 'px'); 
             canv.setAttribute('height', reqCanvasHeight.toString() + 'px'); 
     } 
