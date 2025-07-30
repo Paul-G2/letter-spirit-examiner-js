@@ -25,7 +25,14 @@
         this.quanta = this.quantaIds.map(qid => Namespace.Quanta[qid]);
         this.qidStr = '(' + this.quantaIds.toSorted().join(",") + ')';
 
-        [this.jointList, this.quantaIds, this.quanta, this].forEach(obj => Object.freeze(obj));
+        this.color = '#000000';
+
+        // Make immutable, except for color
+        [this.jointList, this.quantaIds, this.quanta].forEach(obj => Object.freeze(obj));
+        Object.keys(this).forEach(key => {
+            if (key !== 'color') {Object.defineProperty(this, key, {writable: false, configurable: false});}
+        });
+        Object.preventExtensions(this);
     }
 
     
