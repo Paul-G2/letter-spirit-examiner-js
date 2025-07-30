@@ -8792,7 +8792,7 @@ Namespace.InputUi = class {
         this.letterGrid.redraw();
         const dp = this.letterGrid.drawParams;
         this.randoBtn.style.top = 6 + 49*(0.5 + 3*dp.ygap/dp.canvHeight) + 1 + '%';
-        this.randoBtn.style.fontSize = 0.27*dp.ygap + 'px';
+        this.randoBtn.style.fontSize = 0.27*dp.ygap/window.devicePixelRatio + 'px';
 
         const buttonImgs = this.mainDiv.getElementsByClassName("button-img");
         const landscapey = (buttonImgs[0].parentNode.clientHeight < buttonImgs[0].parentNode.clientWidth);
@@ -9070,7 +9070,6 @@ Namespace.LetterGrid = class {
         const clickPt = Namespace.UiUtils.GetRelativeEventCoordinates(e);
         if (!clickPt) { return; }
 
-	    alert(clickPt.join(', '));
         const dp = this.drawParams;
 
         let dists = Namespace.Quanta.map( q => {
@@ -9411,7 +9410,9 @@ Namespace.UiUtils.GetEventCoordinates = function(e)
 	if ( (typeof(cx) == 'undefined') || (typeof(cy) == 'undefined') ) {
 		cx = cy = null;
 	}
-	return [cx, cy];
+
+    const dpr = window.devicePixelRatio;
+	return [cx*dpr, cy*dpr];
 };
 
 
@@ -9429,8 +9430,9 @@ Namespace.UiUtils.GetRelativeEventCoordinates = function(e)
 		return undefined;
 	}
 
+    const dpr = window.devicePixelRatio;
     const elemRect = e.target.getBoundingClientRect();
-    return [coords[0] - elemRect.left, coords[1] - elemRect.top];
+    return [coords[0] - dpr*elemRect.left, coords[1] - dpr*elemRect.top];
 };
 
 
@@ -9473,12 +9475,10 @@ Namespace.UiUtils.RightsizeCanvas = function(canv)
     const reqCanvasWidth = Math.round(dpr * clientWidth);
     const reqCanvasHeight = Math.round(dpr * clientHeight);
 
-    if ( (canv.width != reqCanvasWidth) || 
-        (canv.height != reqCanvasHeight) ) { 
-	    	alert(dpr);
+    if ( (canv.width != reqCanvasWidth) || (canv.height != reqCanvasHeight) ) { 
             canv.width = reqCanvasWidth;  
             canv.height = reqCanvasHeight;
-            //canv.getContext('2d').scale(dpr, dpr);
+            //canv.getContext('2d').scale(dpr, dpr); // Not needed if we specify drawing coords as percents of the canvas size
             canv.setAttribute('width', reqCanvasWidth.toString() + 'px'); 
             canv.setAttribute('height', reqCanvasHeight.toString() + 'px'); 
     } 
