@@ -8599,7 +8599,7 @@ Namespace.HelpDialog = class extends Namespace.Dialog
         '<ul>' +
             '<li> A summary of the Examiner&rsquo;s current actions, at the top.</li>' +
             '<li> A tentative breakdown of the input letter into color-coded parts, on the right side.</li>' +
-            '<li> Descriptions that the Examiner has discovered for the parts, in the center.</li>' + 
+            '<li> Descriptions and tentative roles that the Examiner has discovered for the parts, in the center.</li>' + 
         '</ul>' +
         
         '<p>In the yellow <i>Activations</i> area, the Examiner&rsquo;s built-in "concepts" are shown in a grid. ' + 
