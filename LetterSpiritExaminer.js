@@ -9070,6 +9070,7 @@ Namespace.LetterGrid = class {
         const clickPt = Namespace.UiUtils.GetRelativeEventCoordinates(e);
         if (!clickPt) { return; }
 
+	    alert(clickPt.join(', '));
         const dp = this.drawParams;
 
         let dists = Namespace.Quanta.map( q => {
@@ -9474,6 +9475,7 @@ Namespace.UiUtils.RightsizeCanvas = function(canv)
 
     if ( (canv.width != reqCanvasWidth) || 
         (canv.height != reqCanvasHeight) ) { 
+	    	alert(dpr);
             canv.width = reqCanvasWidth;  
             canv.height = reqCanvasHeight;
             //canv.getContext('2d').scale(dpr, dpr);
