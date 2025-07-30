@@ -163,7 +163,7 @@ Namespace.InputUi = class {
         this.letterGrid.redraw();
         const dp = this.letterGrid.drawParams;
         this.randoBtn.style.top = 6 + 49*(0.5 + 3*dp.ygap/dp.canvHeight) + 1 + '%';
-        this.randoBtn.style.fontSize = 0.27*dp.ygap + 'px';
+        this.randoBtn.style.fontSize = 0.27*dp.ygap/window.devicePixelRatio + 'px';
 
         const buttonImgs = this.mainDiv.getElementsByClassName("button-img");
         const landscapey = (buttonImgs[0].parentNode.clientHeight < buttonImgs[0].parentNode.clientWidth);

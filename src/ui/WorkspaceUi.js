@@ -73,6 +73,7 @@ Namespace.WorkspaceUi = class
     redraw()
     {
         const sortedParts = Utils.SortPartsByGridPosition(this.app.workspace.parts);
+        for (let i = 0; i < sortedParts.length; i++) { sortedParts[i].color = this.partColors[i%this.partColors.length]; }
 
         this.redrawHeader();
         this.redrawLabelArea(sortedParts);
@@ -150,7 +151,7 @@ Namespace.WorkspaceUi = class
         // Do we need to update the drawParams?
         const rescale = UiUtils.NeedToRescale(dp, ctx);
         if (rescale) {
-            if (!this._updateLabelDrawParams(ctx, parts)) { return; }
+            if (!this._updateLabelDrawParams(ctx)) { return; }
         }
 
         // Re-draw all the graphics
@@ -159,11 +160,12 @@ Namespace.WorkspaceUi = class
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.textAlign = "left";
+        parts = parts.toSorted((a,b) => b.numLabels() - a.numLabels());
         for (let i = 0; i < parts.length; i++) { 
             let j;
             const part = parts[i];
             ctx.font = dp.labelFont;
-            ctx.fillStyle = this.partColors[i%this.partColors.length];
+            ctx.fillStyle = part.color;
             const labels = part.labels.toSorted((a,b) => a.text.localeCompare(b.text));
             for (j=0; j<labels.length; j++) {
                 ctx.fillText(labels[j].toString(), dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*j);
@@ -172,6 +174,17 @@ Namespace.WorkspaceUi = class
                 const partRole = wksp.solution.guess ? '?' : (wksp.solution.partRoleMap.get(part)?.name || '?');
                 ctx.font = dp.partRoleFont;
                 ctx.fillText(partRole.replaceAll('_', '-'), dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*(j+1.5)); 
+            }
+            else {
+                const activatedRoles = Object.values(Namespace.Roles).filter(role => wksp.roleActivations[role.name] > 0);
+                let roleScores = activatedRoles.map(role => Utils.CalcRoleScoreForPart(part, role, wksp));
+                roleScores = roleScores.filter(item => item.score > 0).toSorted((a,b) => b.score - a.score);
+                ctx.font = dp.tentativePartRoleFont;
+                for (let k=0; k<Math.min(roleScores.length, 3); k++) {
+                    ctx.fillStyle = UiUtils.ChangeColor(part.color, 40*(k+1));
+                    const roleStr = roleScores[k].role.name.replaceAll('_', '-') + '?';
+                    ctx.fillText(roleStr, dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*(j+k+1));
+                }
             }
         }
     }
@@ -341,11 +354,10 @@ Namespace.WorkspaceUi = class
         }
         else
         {
-            const partColors = this.partColors;
             ctx.lineWidth = Math.max(1, Math.round(4*dp.gridDotRadius));
             ctx.lineCap = 'round';
-            parts.forEach( (part, i) => {
-                ctx.strokeStyle = partColors[i % partColors.length];
+            parts.forEach( part => {
+                ctx.strokeStyle = part.color;
                 part.getQuanta().forEach( q => {
                     let pa = [dp.gridStartX + gap*q.startPoint.x, dp.gridStartY + gap*q.startPoint.y];
                     let pb = [dp.gridStartX + gap*q.endPoint.x,   dp.gridStartY + gap*q.endPoint.y];
@@ -437,11 +449,12 @@ Namespace.WorkspaceUi = class
         [dp.canvWidth, dp.canvHeight] = [cw, ch];        
         
         let fontSize = Math.round(Math.min(0.009*cw, 0.036*ch));
-        dp.textStart = [0.0125*cw, 0.08*ch];    
+        dp.textStart = [0.0125*cw, 0.065*ch];    
         dp.lineSkip = fontSize*1.3;    
         dp.columnSkip = fontSize*17;   
         dp.labelFont ='normal ' + fontSize.toString() + 'px Courier New';
         dp.partRoleFont ='italic bold ' + Math.round(1.5*fontSize).toString() + 'px Arial';
+        dp.tentativePartRoleFont ='italic bold ' + Math.round(1.25*fontSize).toString() + 'px Arial';
 
         return true;
     }
