@@ -4822,7 +4822,14 @@ Namespace.Fonts.WeirdArrow = {
         this.quanta = this.quantaIds.map(qid => Namespace.Quanta[qid]);
         this.qidStr = '(' + this.quantaIds.toSorted().join(",") + ')';
 
-        [this.jointList, this.quantaIds, this.quanta, this].forEach(obj => Object.freeze(obj));
+        this.color = '#000000';
+
+        // Make immutable, except for color
+        [this.jointList, this.quantaIds, this.quanta].forEach(obj => Object.freeze(obj));
+        Object.keys(this).forEach(key => {
+            if (key !== 'color') {Object.defineProperty(this, key, {writable: false, configurable: false});}
+        });
+        Object.preventExtensions(this);
     }
 
     
@@ -8582,34 +8589,35 @@ Namespace.HelpDialog = class extends Namespace.Dialog
 
         this.textDiv.innerHTML =
         '<p></p>' + 
-        '<p>This app is a JavaScript implementation of a computer model of human letter-recognition, ' +  
-        'that was originally developed by Douglas Hofstadter, Gary McGraw and John Rehling ' + 
-        '(<a href="https://en.wikipedia.org/wiki/Fluid_Concepts_and_Creative_Analogies" target="_blank" rel="noopener noreferrer">link</a>).</p>' + 
+        '<p>This app implements a computer model of human letter-recognition that was invented by Douglas Hofstadter, Gary McGraw, and John Rehling. ' + 
+        '(<a href="https://en.wikipedia.org/wiki/Fluid_Concepts_and_Creative_Analogies" target="_blank" rel="noopener noreferrer">link</a>)</p>' + 
         
         '<p>To try it out, enter a letter in the green left-hand grid, either by pressing the <i>random</i> button or by clicking on segments in the grid.</p>' +
         '<p>Then hit the <i>play</i> button to watch the Examiner "think." ' +  '(You can also pause, single-step, reset, and adjust the speed.)</p>' +
 
-        '<p>While running, the central work-area displays</p>' +
+        '<p>While running, the central white work-area displays</p>' +
         '<ul>' +
-            '<li> A summary of the Examiner&rsquo;s current actions, at the top</li>' +
-            '<li> A tentative breakdown of the input letter into color-coded parts, on the right side</li>' +
-            '<li> Descriptions for the parts, in the center' + 
+            '<li> A summary of the Examiner&rsquo;s current actions, at the top.</li>' +
+            '<li> A tentative breakdown of the input letter into color-coded parts, on the right side.</li>' +
+            '<li> Descriptions that the Examiner has discovered for the parts, in the center.</li>' + 
         '</ul>' +
         
-        '<p>The thermometer shows how satisfied the Examiner is with its current progress; lower temperatures imply greater satisfaction.</p>' +
-
         '<p>In the yellow <i>Activations</i> area, the Examiner&rsquo;s built-in "concepts" are shown in a grid. ' + 
-        'The size of the dot over each one indicates how active that concept is at the current moment. (Red indicates negative activation.)</p>' +
+        'The size of the dot in each grid cell indicates how active that concept is at the current moment. (Red indicates negative activation.)</p>' +
 
         '<p>The pink <i>Coderack</i> area displays the list of subroutines or <i>codelets</i> that the Examiner ' +
         'uses to perform its work. The number of each type of codelet currently in the coderack is shown in a dynamical ' +
         'bar graph. The last-run codelet is indicated by a black triangle.</p>' +
-        
+
+        '<p>The thermometer shows how satisfied the Examiner is with its current progress; lower temperatures imply greater satisfaction.</p>' +
+
         '<p>The algorithm is probabilistic, so you may get different results each time you run it on a given letter.</p>' + 
 
-        '<p><a href="https://github.com/Paul-G2/letter-spirit-examiner-js" target="_blank" rel="noopener noreferrer">This app&rsquo;s code</a> ' + 
-        'is heavily based on the original Scheme code by John Rehling, linked ' + 
-        '<a href="https://github.com/Alex-Linhares/FARGonautica/tree/master#project-letter-spirit" target="_blank" rel="noopener noreferrer">here</a>.</p>';
+        '<p><a href="https://github.com/Paul-G2/letter-spirit-examiner-js" target="_blank" rel="noopener noreferrer">The code for this app</a> ' + 
+        'is heavily based on the Scheme code of John Rehling, linked ' + 
+        '<a href="https://github.com/Alex-Linhares/FARGonautica/tree/master#project-letter-spirit" target="_blank" rel="noopener noreferrer">here</a>.</p>' +
+        
+        '</p>&nbsp;</p>';
     }
 
 };
@@ -8792,7 +8800,7 @@ Namespace.InputUi = class {
         this.letterGrid.redraw();
         const dp = this.letterGrid.drawParams;
         this.randoBtn.style.top = 6 + 49*(0.5 + 3*dp.ygap/dp.canvHeight) + 1 + '%';
-        this.randoBtn.style.fontSize = 0.27*dp.ygap + 'px';
+        this.randoBtn.style.fontSize = 0.27*dp.ygap/window.devicePixelRatio + 'px';
 
         const buttonImgs = this.mainDiv.getElementsByClassName("button-img");
         const landscapey = (buttonImgs[0].parentNode.clientHeight < buttonImgs[0].parentNode.clientWidth);
@@ -9410,7 +9418,9 @@ Namespace.UiUtils.GetEventCoordinates = function(e)
 	if ( (typeof(cx) == 'undefined') || (typeof(cy) == 'undefined') ) {
 		cx = cy = null;
 	}
-	return [cx, cy];
+
+    const dpr = window.devicePixelRatio;
+	return [cx*dpr, cy*dpr];
 };
 
 
@@ -9428,8 +9438,9 @@ Namespace.UiUtils.GetRelativeEventCoordinates = function(e)
 		return undefined;
 	}
 
+    const dpr = window.devicePixelRatio;
     const elemRect = e.target.getBoundingClientRect();
-    return [coords[0] - elemRect.left, coords[1] - elemRect.top];
+    return [coords[0] - dpr*elemRect.left, coords[1] - dpr*elemRect.top];
 };
 
 
@@ -9472,11 +9483,10 @@ Namespace.UiUtils.RightsizeCanvas = function(canv)
     const reqCanvasWidth = Math.round(dpr * clientWidth);
     const reqCanvasHeight = Math.round(dpr * clientHeight);
 
-    if ( (canv.width != reqCanvasWidth) || 
-        (canv.height != reqCanvasHeight) ) { 
+    if ( (canv.width != reqCanvasWidth) || (canv.height != reqCanvasHeight) ) { 
             canv.width = reqCanvasWidth;  
             canv.height = reqCanvasHeight;
-            canv.getContext('2d').scale(dpr, dpr);
+            //canv.getContext('2d').scale(dpr, dpr); // Not needed if we specify drawing coords as percents of the canvas size
             canv.setAttribute('width', reqCanvasWidth.toString() + 'px'); 
             canv.setAttribute('height', reqCanvasHeight.toString() + 'px'); 
     } 
@@ -9531,6 +9541,19 @@ Namespace.UiUtils.DrawLines = function(ctx, pts)
     ctx.stroke();
 };
 
+
+
+Namespace.UiUtils.ChangeColor = function(color, amount) 
+{ 
+    const clamp = (val) => Math.min(Math.max(val, 0), 0xff);
+    const fill = (str) => ('00' + str).slice(-2);
+
+    const num = parseInt(color.substr(1), 16);
+    const red = clamp((num >> 16) + amount);
+    const green = clamp(((num >> 8) & 0x00FF) + amount);
+    const blue = clamp((num & 0x0000FF) + amount);
+    return '#' + fill(red.toString(16)) + fill(green.toString(16)) + fill(blue.toString(16));
+};
 
 
 
@@ -9617,6 +9640,7 @@ Namespace.WorkspaceUi = class
     redraw()
     {
         const sortedParts = Utils.SortPartsByGridPosition(this.app.workspace.parts);
+        for (let i = 0; i < sortedParts.length; i++) { sortedParts[i].color = this.partColors[i%this.partColors.length]; }
 
         this.redrawHeader();
         this.redrawLabelArea(sortedParts);
@@ -9694,7 +9718,7 @@ Namespace.WorkspaceUi = class
         // Do we need to update the drawParams?
         const rescale = UiUtils.NeedToRescale(dp, ctx);
         if (rescale) {
-            if (!this._updateLabelDrawParams(ctx, parts)) { return; }
+            if (!this._updateLabelDrawParams(ctx)) { return; }
         }
 
         // Re-draw all the graphics
@@ -9703,11 +9727,12 @@ Namespace.WorkspaceUi = class
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.textAlign = "left";
+        parts = parts.toSorted((a,b) => b.numLabels() - a.numLabels());
         for (let i = 0; i < parts.length; i++) { 
             let j;
             const part = parts[i];
             ctx.font = dp.labelFont;
-            ctx.fillStyle = this.partColors[i%this.partColors.length];
+            ctx.fillStyle = part.color;
             const labels = part.labels.toSorted((a,b) => a.text.localeCompare(b.text));
             for (j=0; j<labels.length; j++) {
                 ctx.fillText(labels[j].toString(), dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*j);
@@ -9716,6 +9741,17 @@ Namespace.WorkspaceUi = class
                 const partRole = wksp.solution.guess ? '?' : (wksp.solution.partRoleMap.get(part)?.name || '?');
                 ctx.font = dp.partRoleFont;
                 ctx.fillText(partRole.replaceAll('_', '-'), dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*(j+1.5)); 
+            }
+            else {
+                const activatedRoles = Object.values(Namespace.Roles).filter(role => wksp.roleActivations[role.name] > 0);
+                let roleScores = activatedRoles.map(role => Utils.CalcRoleScoreForPart(part, role, wksp));
+                roleScores = roleScores.filter(item => item.score > 0).toSorted((a,b) => b.score - a.score);
+                ctx.font = dp.tentativePartRoleFont;
+                for (let k=0; k<Math.min(roleScores.length, 3); k++) {
+                    ctx.fillStyle = UiUtils.ChangeColor(part.color, 40*(k+1));
+                    const roleStr = roleScores[k].role.name.replaceAll('_', '-') + '?';
+                    ctx.fillText(roleStr, dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*(j+k+1));
+                }
             }
         }
     }
@@ -9885,11 +9921,10 @@ Namespace.WorkspaceUi = class
         }
         else
         {
-            const partColors = this.partColors;
             ctx.lineWidth = Math.max(1, Math.round(4*dp.gridDotRadius));
             ctx.lineCap = 'round';
-            parts.forEach( (part, i) => {
-                ctx.strokeStyle = partColors[i % partColors.length];
+            parts.forEach( part => {
+                ctx.strokeStyle = part.color;
                 part.getQuanta().forEach( q => {
                     let pa = [dp.gridStartX + gap*q.startPoint.x, dp.gridStartY + gap*q.startPoint.y];
                     let pb = [dp.gridStartX + gap*q.endPoint.x,   dp.gridStartY + gap*q.endPoint.y];
@@ -9981,11 +10016,12 @@ Namespace.WorkspaceUi = class
         [dp.canvWidth, dp.canvHeight] = [cw, ch];        
         
         let fontSize = Math.round(Math.min(0.009*cw, 0.036*ch));
-        dp.textStart = [0.0125*cw, 0.08*ch];    
+        dp.textStart = [0.0125*cw, 0.065*ch];    
         dp.lineSkip = fontSize*1.3;    
         dp.columnSkip = fontSize*17;   
         dp.labelFont ='normal ' + fontSize.toString() + 'px Courier New';
         dp.partRoleFont ='italic bold ' + Math.round(1.5*fontSize).toString() + 'px Arial';
+        dp.tentativePartRoleFont ='italic bold ' + Math.round(1.25*fontSize).toString() + 'px Arial';
 
         return true;
     }
