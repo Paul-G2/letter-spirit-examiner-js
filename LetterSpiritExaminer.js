@@ -8582,8 +8582,8 @@ Namespace.HelpDialog = class extends Namespace.Dialog
 
         this.textDiv.innerHTML =
         '<p></p>' + 
-        '<p>This app implements a computer model of human letter-recognition that was invented by Douglas Hofstadter, Gary McGraw and John Rehling ' + 
-        '(<a href="https://en.wikipedia.org/wiki/Fluid_Concepts_and_Creative_Analogies" target="_blank" rel="noopener noreferrer">link</a>).</p>' + 
+        '<p>This app implements a computer model of human letter-recognition that was invented by Douglas Hofstadter, Gary McGraw, and John Rehling. ' + 
+        '(<a href="https://en.wikipedia.org/wiki/Fluid_Concepts_and_Creative_Analogies" target="_blank" rel="noopener noreferrer">link</a>)</p>' + 
         
         '<p>To try it out, enter a letter in the green left-hand grid, either by pressing the <i>random</i> button or by clicking on segments in the grid.</p>' +
         '<p>Then hit the <i>play</i> button to watch the Examiner "think." ' +  '(You can also pause, single-step, reset, and adjust the speed.)</p>' +
@@ -8592,7 +8592,7 @@ Namespace.HelpDialog = class extends Namespace.Dialog
         '<ul>' +
             '<li> A summary of the Examiner&rsquo;s current actions, at the top.</li>' +
             '<li> A tentative breakdown of the input letter into color-coded parts, on the right side.</li>' +
-            '<li> Descriptions it has discovered for the parts, in the center.</li>' + 
+            '<li> Descriptions that the Examiner has discovered for the parts, in the center.</li>' + 
         '</ul>' +
         
         '<p>In the yellow <i>Activations</i> area, the Examiner&rsquo;s built-in "concepts" are shown in a grid. ' + 
@@ -8606,7 +8606,7 @@ Namespace.HelpDialog = class extends Namespace.Dialog
 
         '<p>The algorithm is probabilistic, so you may get different results each time you run it on a given letter.</p>' + 
 
-        '<p><a href="https://github.com/Paul-G2/letter-spirit-examiner-js" target="_blank" rel="noopener noreferrer">This app&rsquo;s code</a> ' + 
+        '<p><a href="https://github.com/Paul-G2/letter-spirit-examiner-js" target="_blank" rel="noopener noreferrer">The code for this app</a> ' + 
         'is heavily based on the Scheme code of John Rehling, linked ' + 
         '<a href="https://github.com/Alex-Linhares/FARGonautica/tree/master#project-letter-spirit" target="_blank" rel="noopener noreferrer">here</a>.</p>' +
         
