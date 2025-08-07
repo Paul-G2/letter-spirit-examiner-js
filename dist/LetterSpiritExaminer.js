@@ -8599,7 +8599,7 @@ Namespace.HelpDialog = class extends Namespace.Dialog
         '<ul>' +
             '<li> A summary of the Examiner&rsquo;s current actions, at the top.</li>' +
             '<li> A tentative breakdown of the input letter into color-coded parts, on the right side.</li>' +
-            '<li> Descriptions that the Examiner has discovered for the parts, in the center.</li>' + 
+            '<li> Descriptions and tentative roles that the Examiner has discovered for the parts, in the center.</li>' + 
         '</ul>' +
         
         '<p>In the yellow <i>Activations</i> area, the Examiner&rsquo;s built-in "concepts" are shown in a grid. ' + 
@@ -9542,7 +9542,10 @@ Namespace.UiUtils.DrawLines = function(ctx, pts)
 };
 
 
-
+/**
+ * Lightens or darkens a color by a given amount.
+ *
+ */
 Namespace.UiUtils.ChangeColor = function(color, amount) 
 { 
     const clamp = (val) => Math.min(Math.max(val, 0), 0xff);
@@ -9727,7 +9730,7 @@ Namespace.WorkspaceUi = class
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.textAlign = "left";
-        parts = parts.toSorted((a,b) => b.numLabels() - a.numLabels());
+        parts = parts.filter(part => part.numLabels() > 1).concat(parts.filter(part => part.numLabels() <= 1));
         for (let i = 0; i < parts.length; i++) { 
             let j;
             const part = parts[i];
