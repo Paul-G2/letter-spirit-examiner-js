@@ -160,7 +160,7 @@ Namespace.WorkspaceUi = class
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.textAlign = "left";
-        parts = parts.toSorted((a,b) => b.numLabels() - a.numLabels());
+        parts = parts.filter(part => part.numLabels() > 1).concat(parts.filter(part => part.numLabels() <= 1));
         for (let i = 0; i < parts.length; i++) { 
             let j;
             const part = parts[i];
