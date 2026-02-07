@@ -273,7 +273,7 @@ Namespace.WorkspaceUi = class
             ctx.textAlign = "center";
             ctx.fillStyle = '#000000';
             ctx.font = dp.solutionFont1;
-            ctx.fillText('I think its:', ...dp.solutionTextLoc1);
+            ctx.fillText("I think it's:", ...dp.solutionTextLoc1);
             ctx.font = dp.solutionFont2;
             ctx.fillText('" ' + wksp.solution.wholeName[0] + ' "', ...dp.solutionTextLoc2);
         }
@@ -574,3 +574,4 @@ Namespace.WorkspaceUi = class
 
 
 })( window.LetterSpirit = window.LetterSpirit || {} );
+
