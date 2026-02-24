@@ -25,19 +25,20 @@ Namespace.ActivationsUi = class {
         this.nRows = 5;
         this.nCols = 16;
         this.drawParams = {};
-        this.bkgndColor = '#fffbcc';
+        this.roleBkgndColor = '#fffbcc';
+        this.wholeBkgndColor = '#fff9a8';
         this.posBlobColor = '#000070';
         this.negBlobColor = '#ff0000';
         this.titleColor = '#707070';
         
         this.mainDiv = Namespace.UiUtils.CreateElement('div', 
             'activations-div', this.parentDiv, {top:'0%', left:'0%', width:'100%', height:'100%',
-            border:'1px solid black', background:this.bkgndColor}); 
+            border:'1px solid black', background:this.roleBkgndColor}); 
 
         this.canvas = Namespace.UiUtils.CreateElement('canvas',
             'acts-canvas', this.parentDiv, {position:'absolute', margin:'0', 
             padding:'0', top:'0%', left:'0%', width:'100%', height:'100%', 
-            border: '1px solid', background:this.bkgndColor}
+            border: '1px solid', background:this.roleBkgndColor}
         ); 
 
         this.nodeInfoList = 
@@ -83,7 +84,7 @@ Namespace.ActivationsUi = class {
         ctx.fillStyle = this.titleColor;
         ctx.fillText(this.title, dp.titleX, dp.titleY);
         
-        // Draw the blobs and maybe their labels
+        // Draw the blobs and their labels
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'black'; 
         ctx.textAlign = "center";
@@ -98,8 +99,9 @@ Namespace.ActivationsUi = class {
                 const cc = dp.circleCoords[c][r];
                 const sq = dp.squareCoords[c][r];
                 const act = (node.id.length === 2) ? wholeActs[node.id] : roleActs[node.id];
-                const radius = Math.max(2, dp.maxRadius * Math.abs(act)/100);               
-                ctx.clearRect(sq.x, sq.y, sq.w, sq.h);
+                const radius = Math.max(2, dp.maxRadius * Math.abs(act)/100);    
+                ctx.fillStyle = (node.id.length === 2) ? this.wholeBkgndColor : this.roleBkgndColor;           
+                ctx.fillRect(sq.x, sq.y, sq.w, sq.h);
                 ctx.fillStyle = (act >= 0) ? this.posBlobColor : this.negBlobColor; 
                 ctx.beginPath();
                 ctx.arc(cc.x, cc.y, radius, 0, 2*Math.PI);
@@ -167,10 +169,12 @@ Namespace.ActivationsUi = class {
 
         for (let r=0; r<nRows; r++) {
             for (let c=0; c<nCols; c++) {
+                const tx = c*dp.cellWidth;
+                const ty = r*dp.cellHeight;
                 const cx = (c + 0.5) * dp.cellWidth;
                 const cy = r*dp.cellHeight + dp.maxRadius + 2;
                 dp.circleCoords[c][r] = {x:cx, y:cy};
-                dp.squareCoords[c][r] = {x:cx-mr-1, y:cy-mr-1, w:2*mr+2, h:2*mr+2};
+                dp.squareCoords[c][r] = {x:tx, y:ty, w:dp.cellWidth, h:dp.cellHeight};
                 dp.textCoords[c][r] = {x:cx, y:(r+1)*dp.cellHeight - dp.labelFontSize/2}; 
             }
         }
