@@ -25,6 +25,9 @@ Namespace.Params.HighUrgency = 50;
 Namespace.Params.MediumUrgency = 25;
 Namespace.Params.LowUrgency = 10;
 
+/* Whether to guess a solution once MaxCodelets is exceeded */ 
+Namespace.Params.AllowGuessing = false;
+
 /* Factor for suppressing later-generation codelets (1 means no suppression) */
 Namespace.Params.GenerationGapConstant = 1;
 
@@ -33,6 +36,9 @@ Namespace.Params.NumExamPhaseCodelets = 800;
 
 /* Maximum number of codelets to run overall */
 Namespace.Params.MaxCodelets = 10 * Namespace.Params.NumExamPhaseCodelets;
+
+/* Reduction factor for sparking, applied after phase */
+Namespace.Params.SparkerReductionFactor = 0.9;
 
 /* Amount of glue to put down for given angle-values (GlueAnt) */
 Namespace.Params.GlueByAngle = {0:6, 45:4, 90:3, 135:1};

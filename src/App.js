@@ -272,12 +272,17 @@
         }
         else {
             if (this.coderack.numCodeletsRun >= Params.MaxCodelets) {
-                // Get the prototype that best matches the input letter. This will be our guess.
-                rptr.info("Max codelets reached, forcing a guess.");
-                const protoDists = Object.values(Namespace.Knowledge.BlurredPrototypes).map(prot => wksp.inputGridLetter.distanceTo(prot));
-                const indexOfBest = protoDists.reduce((iMin, val, i, arr) => (val < arr[iMin]) ? i : iMin, 0);
-                wksp.solution = {wholeName: Knowledge.LetterCategories[indexOfBest]+'1', score: Utils.Round1(protoDists[indexOfBest]), guess: true}; 
-                wksp.makePartRoleMap();
+                if (Params.AllowGuessing) {
+                    // Get the prototype that best matches the input letter. This will be our guess.
+                    rptr.info("Max codelets reached, forcing a guess.");
+                    const protoDists = Object.values(Namespace.Knowledge.BlurredPrototypes).map(prot => wksp.inputGridLetter.distanceTo(prot));
+                    const indexOfBest = protoDists.reduce((iMin, val, i, arr) => (val < arr[iMin]) ? i : iMin, 0);
+                    wksp.solution = {wholeName: Knowledge.LetterCategories[indexOfBest]+'1', score: Utils.Round1(protoDists[indexOfBest]), guess: true}; 
+                    wksp.makePartRoleMap();
+                }
+                else {
+                    wksp.solution = {wholeName: "<unknown>", score: 0, guess: true}; 
+                }
             }
             else if (tmprObj.value < 30) {
                 // Try to solve things when the temperature is low
@@ -327,7 +332,7 @@
      * Runs the Examiner on a list of input letters, without any UI.
      * 
      */
-    async batchRun(inputLetters, iters, allowGuessing=true)
+    async batchRun(inputLetters, iters)
     {
         const [wksp, rack, tmprObj, rptr] = [this.workspace, this.coderack, this.temperature, this.reporter];
 
@@ -359,7 +364,7 @@
 
                     // Check whether we are done
                     if (this._checkForSolution()) {
-                        const detectedChar = (wksp.solution.guess && !allowGuessing) ? 'fail' :  wksp.solution.wholeName[0];
+                        const detectedChar = (wksp.solution.guess && !Params.AllowGuessing) ? 'fail' :  wksp.solution.wholeName[0];
                         if (!results[inputChar][detectedChar])  { results[inputChar][detectedChar] = 0; }
                         results[inputChar][detectedChar]++;
                         totalNumCodeletsRun += rack.numCodeletsRun;

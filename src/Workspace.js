@@ -178,11 +178,9 @@
      */
     easeSparkerParams()
     {
-        const factor = 0.9;
-
-        this.sparkerData.sparkThreshold *= factor;
-        this.sparkerData.punish *= factor;
-        this.sparkerData.punishHard *= factor;
+        this.sparkerData.sparkThreshold *= Params.SparkerReductionFactor;
+        this.sparkerData.punish         *= Params.SparkerReductionFactor;
+        this.sparkerData.punishHard     *= Params.SparkerReductionFactor;
     }
 
 
@@ -255,7 +253,7 @@
 
 
     /**
-     * Updates the activtion of currently-active wholes, based on
+     * Updates the activation of currently-active wholes, based on
      * how well their roles are filled by the current parts.
      * 
      */
