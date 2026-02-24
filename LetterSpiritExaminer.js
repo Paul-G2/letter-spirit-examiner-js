@@ -578,6 +578,9 @@ Namespace.Params.HighUrgency = 50;
 Namespace.Params.MediumUrgency = 25;
 Namespace.Params.LowUrgency = 10;
 
+/* Whether to guess a solution once MaxCodelets is exceeded */ 
+Namespace.Params.AllowGuessing = false;
+
 /* Factor for suppressing later-generation codelets (1 means no suppression) */
 Namespace.Params.GenerationGapConstant = 1;
 
@@ -586,6 +589,9 @@ Namespace.Params.NumExamPhaseCodelets = 800;
 
 /* Maximum number of codelets to run overall */
 Namespace.Params.MaxCodelets = 10 * Namespace.Params.NumExamPhaseCodelets;
+
+/* Reduction factor for sparking, applied after phase */
+Namespace.Params.SparkerReductionFactor = 0.9;
 
 /* Amount of glue to put down for given angle-values (GlueAnt) */
 Namespace.Params.GlueByAngle = {0:6, 45:4, 90:3, 135:1};
@@ -3315,12 +3321,17 @@ Object.freeze(Namespace.Wholes);
         }
         else {
             if (this.coderack.numCodeletsRun >= Params.MaxCodelets) {
-                // Get the prototype that best matches the input letter. This will be our guess.
-                rptr.info("Max codelets reached, forcing a guess.");
-                const protoDists = Object.values(Namespace.Knowledge.BlurredPrototypes).map(prot => wksp.inputGridLetter.distanceTo(prot));
-                const indexOfBest = protoDists.reduce((iMin, val, i, arr) => (val < arr[iMin]) ? i : iMin, 0);
-                wksp.solution = {wholeName: Knowledge.LetterCategories[indexOfBest]+'1', score: Utils.Round1(protoDists[indexOfBest]), guess: true}; 
-                wksp.makePartRoleMap();
+                if (Params.AllowGuessing) {
+                    // Get the prototype that best matches the input letter. This will be our guess.
+                    rptr.info("Max codelets reached, forcing a guess.");
+                    const protoDists = Object.values(Namespace.Knowledge.BlurredPrototypes).map(prot => wksp.inputGridLetter.distanceTo(prot));
+                    const indexOfBest = protoDists.reduce((iMin, val, i, arr) => (val < arr[iMin]) ? i : iMin, 0);
+                    wksp.solution = {wholeName: Knowledge.LetterCategories[indexOfBest]+'1', score: Utils.Round1(protoDists[indexOfBest]), guess: true}; 
+                    wksp.makePartRoleMap();
+                }
+                else {
+                    wksp.solution = {wholeName: "<unknown>", score: 0, guess: true}; 
+                }
             }
             else if (tmprObj.value < 30) {
                 // Try to solve things when the temperature is low
@@ -3370,7 +3381,7 @@ Object.freeze(Namespace.Wholes);
      * Runs the Examiner on a list of input letters, without any UI.
      * 
      */
-    async batchRun(inputLetters, iters, allowGuessing=true)
+    async batchRun(inputLetters, iters)
     {
         const [wksp, rack, tmprObj, rptr] = [this.workspace, this.coderack, this.temperature, this.reporter];
 
@@ -3402,7 +3413,7 @@ Object.freeze(Namespace.Wholes);
 
                     // Check whether we are done
                     if (this._checkForSolution()) {
-                        const detectedChar = (wksp.solution.guess && !allowGuessing) ? 'fail' :  wksp.solution.wholeName[0];
+                        const detectedChar = (wksp.solution.guess && !Params.AllowGuessing) ? 'fail' :  wksp.solution.wholeName[0];
                         if (!results[inputChar][detectedChar])  { results[inputChar][detectedChar] = 0; }
                         results[inputChar][detectedChar]++;
                         totalNumCodeletsRun += rack.numCodeletsRun;
@@ -6001,11 +6012,9 @@ Object.freeze(Namespace.Quanta);
      */
     easeSparkerParams()
     {
-        const factor = 0.9;
-
-        this.sparkerData.sparkThreshold *= factor;
-        this.sparkerData.punish *= factor;
-        this.sparkerData.punishHard *= factor;
+        this.sparkerData.sparkThreshold *= Params.SparkerReductionFactor;
+        this.sparkerData.punish         *= Params.SparkerReductionFactor;
+        this.sparkerData.punishHard     *= Params.SparkerReductionFactor;
     }
 
 
@@ -6078,7 +6087,7 @@ Object.freeze(Namespace.Quanta);
 
 
     /**
-     * Updates the activtion of currently-active wholes, based on
+     * Updates the activation of currently-active wholes, based on
      * how well their roles are filled by the current parts.
      * 
      */
@@ -6192,19 +6201,18 @@ Object.freeze(Namespace.Quanta);
         wksp.codeletMessage1 = wksp.codeletMessage2 = '';    
         
         // Check whether the part is still around
-        const part = this.part;
-        const otherParts = wksp.parts.filter(p => !p.hasSameJointsAs(part));
-        if (!wksp.containsPart(part)) { 
+        if (!wksp.containsPart(this.part)) { 
             wksp.codeletMessage1 = "Part is no longer around ... >>>fizzle<<<";
             return;
         }
 
         // Break the part
-        wksp.codeletMessage1 = "Breaking part " + part.qidString(); 
-        let newParts = Namespace.Codelets.Breaker.ReglueSortAndCrack(part.jointList, wksp);
+        wksp.codeletMessage1 = "Breaking part " + this.part.qidString(); 
+        let newParts = Namespace.Codelets.Breaker.ReglueSortAndCrack(this.part.jointList, wksp);
         newParts.forEach(p => p.addLabel(new Namespace.Label('**whine', 25)));
 
         Utils.Dampen(wksp);
+        const otherParts = wksp.parts.filter(p => !p.hasSameJointsAs(this.part));
         wksp.parts = [...newParts, ...otherParts];
         wksp.app.coderack.post(newParts.length, 'looker', Params.MediumUrgency, this.gen+1);        
         wksp.codeletMessage2 = "Workspace re-set and lookers spun";
@@ -7841,19 +7849,20 @@ Namespace.ActivationsUi = class {
         this.nRows = 5;
         this.nCols = 16;
         this.drawParams = {};
-        this.bkgndColor = '#fffbcc';
+        this.roleBkgndColor = '#fffbcc';
+        this.wholeBkgndColor = '#fff9a8';
         this.posBlobColor = '#000070';
         this.negBlobColor = '#ff0000';
         this.titleColor = '#707070';
         
         this.mainDiv = Namespace.UiUtils.CreateElement('div', 
             'activations-div', this.parentDiv, {top:'0%', left:'0%', width:'100%', height:'100%',
-            border:'1px solid black', background:this.bkgndColor}); 
+            border:'1px solid black', background:this.roleBkgndColor}); 
 
         this.canvas = Namespace.UiUtils.CreateElement('canvas',
             'acts-canvas', this.parentDiv, {position:'absolute', margin:'0', 
             padding:'0', top:'0%', left:'0%', width:'100%', height:'100%', 
-            border: '1px solid', background:this.bkgndColor}
+            border: '1px solid', background:this.roleBkgndColor}
         ); 
 
         this.nodeInfoList = 
@@ -7899,7 +7908,7 @@ Namespace.ActivationsUi = class {
         ctx.fillStyle = this.titleColor;
         ctx.fillText(this.title, dp.titleX, dp.titleY);
         
-        // Draw the blobs and maybe their labels
+        // Draw the blobs and their labels
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'black'; 
         ctx.textAlign = "center";
@@ -7914,8 +7923,9 @@ Namespace.ActivationsUi = class {
                 const cc = dp.circleCoords[c][r];
                 const sq = dp.squareCoords[c][r];
                 const act = (node.id.length === 2) ? wholeActs[node.id] : roleActs[node.id];
-                const radius = Math.max(2, dp.maxRadius * Math.abs(act)/100);               
-                ctx.clearRect(sq.x, sq.y, sq.w, sq.h);
+                const radius = Math.max(2, dp.maxRadius * Math.abs(act)/100);    
+                ctx.fillStyle = (node.id.length === 2) ? this.wholeBkgndColor : this.roleBkgndColor;           
+                ctx.fillRect(sq.x, sq.y, sq.w, sq.h);
                 ctx.fillStyle = (act >= 0) ? this.posBlobColor : this.negBlobColor; 
                 ctx.beginPath();
                 ctx.arc(cc.x, cc.y, radius, 0, 2*Math.PI);
@@ -7983,10 +7993,12 @@ Namespace.ActivationsUi = class {
 
         for (let r=0; r<nRows; r++) {
             for (let c=0; c<nCols; c++) {
+                const tx = c*dp.cellWidth;
+                const ty = r*dp.cellHeight;
                 const cx = (c + 0.5) * dp.cellWidth;
                 const cy = r*dp.cellHeight + dp.maxRadius + 2;
                 dp.circleCoords[c][r] = {x:cx, y:cy};
-                dp.squareCoords[c][r] = {x:cx-mr-1, y:cy-mr-1, w:2*mr+2, h:2*mr+2};
+                dp.squareCoords[c][r] = {x:tx, y:ty, w:dp.cellWidth, h:dp.cellHeight};
                 dp.textCoords[c][r] = {x:cx, y:(r+1)*dp.cellHeight - dp.labelFontSize/2}; 
             }
         }
@@ -9842,10 +9854,17 @@ Namespace.WorkspaceUi = class
             ctx.fillRect(...dp.solutionRect);
             ctx.textAlign = "center";
             ctx.fillStyle = '#000000';
-            ctx.font = dp.solutionFont1;
-            ctx.fillText("I think it's:", ...dp.solutionTextLoc1);
-            ctx.font = dp.solutionFont2;
-            ctx.fillText('" ' + wksp.solution.wholeName[0] + ' "', ...dp.solutionTextLoc2);
+            
+            if (wksp.solution.wholeName == '<unknown>') {
+                ctx.font = dp.solutionFont1;
+                ctx.fillText('I give up.', ...dp.solutionTextLoc1);
+            }
+            else {
+                ctx.font = dp.solutionFont1;
+                ctx.fillText('I think its:', ...dp.solutionTextLoc1);
+                ctx.font = dp.solutionFont2;
+                ctx.fillText('" ' + wksp.solution.wholeName[0] + ' "', ...dp.solutionTextLoc2);
+            }
         }
 
     }
@@ -10144,7 +10163,6 @@ Namespace.WorkspaceUi = class
 
 
 })( window.LetterSpirit = window.LetterSpirit || {} );
-
 
 
 
