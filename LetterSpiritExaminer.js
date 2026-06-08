@@ -6668,7 +6668,7 @@ Object.freeze(Namespace.Quanta);
 
         const updatedPart = wksp.getUpdatedPart(this.part); // In case the part has changed
         if (!updatedPart || updatedPart.hasLabel('**whine')) {
-            wksp.codeletMessage1 = `Part ${this.part.qidString()} is no longer around ... >>>Fizzle<<<`;
+            wksp.codeletMessage1 = `Part ${this.part.qidString()} is no longer around ... >>>fizzle<<<`;
         } 
         else {
             for (let i=0; i<9; i++) {
