@@ -60,7 +60,7 @@
 
         const updatedPart = wksp.getUpdatedPart(this.part); // In case the part has changed
         if (!updatedPart || updatedPart.hasLabel('**whine')) {
-            wksp.codeletMessage1 = `Part ${this.part.qidString()} is no longer around ... >>>Fizzle<<<`;
+            wksp.codeletMessage1 = `Part ${this.part.qidString()} is no longer around ... >>>fizzle<<<`;
         } 
         else {
             for (let i=0; i<9; i++) {
@@ -192,7 +192,7 @@
             const ori0 = '' + ((dy0 > 0) ? 's' : (dy0 < 0) ? 'n' : '')  + ((dx0 > 0) ? 'e' : (dx0 < 0) ? 'w' : '');
 
             const q1 = Namespace.Quanta[qids[qids.length-1]];
-            let [s1, e1] = tips.includes(q1.startPointId) ? [q1.endPoint, q1.startPoint] : [q1.startPoint, q1.endPoint];
+            let [s1, e1] = (q1 === q0) ? [e0, s0] : tips.includes(q1.startPointId) ? [q1.endPoint, q1.startPoint] : [q1.startPoint, q1.endPoint];
             const [dx1, dy1] = [e1.x - s1.x, e1.y - s1.y];
             const ori1 = '' + ((dy1 > 0) ? 's' : (dy1 < 0) ? 'n' : '')  + ((dx1 > 0) ? 'e' : (dx1 < 0) ? 'w' : '');
 
@@ -289,18 +289,21 @@
      */
     static LabelWeight(part) 
     {
-        const numQuanta = (part.getLabel('quanta')?.data || []).length;
-        part.addLabel( Namespace.Codelets.Labeler.CreateWeightLabel(numQuanta) );
+        const qids = part.getLabel('quanta')?.data || [];
+        part.addLabel( Namespace.Codelets.Labeler.CreateWeightLabel(qids) );
     }   
 
 
     /**
      * Creates a weight label based on the number of quanta.
      */
-    static CreateWeightLabel(numQuanta) 
+    static CreateWeightLabel(qids) 
     {
-        const text = (numQuanta < 1) ? 'zero' : (numQuanta <= 1.5) ? 'very_light' : (numQuanta <= 2.9) ? 'light' : 
-            (numQuanta <= 5) ? 'medium_wt' : (numQuanta <= 8) ? 'heavy' : 'huge';   
+        const wts = qids.map(qid => qid < 32 ? 1 : 1.4142);
+        const wt = wts.reduce((a, b) => a + b, 0);
+        
+        const text = (wt < 1) ? 'zero' : (wt <= 1.5) ? 'very_light' : (wt <= 2.9) ? 'light' : 
+            (wt <= 5) ? 'medium_wt' : (wt <= 8) ? 'heavy' : 'huge';     
 
         return new Label(text, null);
     }
