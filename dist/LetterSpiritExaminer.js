@@ -455,10 +455,8 @@ Namespace.Knowledge.TipFlipMap = {
  * Curve types.
  */
 Namespace.Knowledge.CurvesList = [    
-    "full_left", "strong_left", "square_left", "slight_left",
-	"straight",
-	"slight_right", "square_right", "strong_right", "full_right",
-     "closure", 
+    "full_left", "strong_left", "square_left", "slight_left", "straight",
+	"slight_right", "square_right", "strong_right", "full_right", "closure", 
 ];
 
 
@@ -3385,7 +3383,7 @@ Object.freeze(Namespace.Wholes);
     {
         const [wksp, rack, tmprObj, rptr] = [this.workspace, this.coderack, this.temperature, this.reporter];
 
-        // Disable UI and repoting
+        // Disable UI and reporting
         const cachedVals = {ui: this.ui, animateAnts: Params.AnimateAnts, animateShaker: Params.AnimateShaker};
         this.ui = null;
         Params.AnimateAnts = Params.AnimateShaker = false;
@@ -6802,7 +6800,7 @@ Object.freeze(Namespace.Quanta);
             const ori0 = '' + ((dy0 > 0) ? 's' : (dy0 < 0) ? 'n' : '')  + ((dx0 > 0) ? 'e' : (dx0 < 0) ? 'w' : '');
 
             const q1 = Namespace.Quanta[qids[qids.length-1]];
-            let [s1, e1] = tips.includes(q1.startPointId) ? [q1.endPoint, q1.startPoint] : [q1.startPoint, q1.endPoint];
+            let [s1, e1] = (q1 === q0) ? [e0, s0] : tips.includes(q1.startPointId) ? [q1.endPoint, q1.startPoint] : [q1.startPoint, q1.endPoint];
             const [dx1, dy1] = [e1.x - s1.x, e1.y - s1.y];
             const ori1 = '' + ((dy1 > 0) ? 's' : (dy1 < 0) ? 'n' : '')  + ((dx1 > 0) ? 'e' : (dx1 < 0) ? 'w' : '');
 
@@ -6899,18 +6897,21 @@ Object.freeze(Namespace.Quanta);
      */
     static LabelWeight(part) 
     {
-        const numQuanta = (part.getLabel('quanta')?.data || []).length;
-        part.addLabel( Namespace.Codelets.Labeler.CreateWeightLabel(numQuanta) );
+        const qids = part.getLabel('quanta')?.data || [];
+        part.addLabel( Namespace.Codelets.Labeler.CreateWeightLabel(qids) );
     }   
 
 
     /**
      * Creates a weight label based on the number of quanta.
      */
-    static CreateWeightLabel(numQuanta) 
+    static CreateWeightLabel(qids) 
     {
-        const text = (numQuanta < 1) ? 'zero' : (numQuanta <= 1.5) ? 'very_light' : (numQuanta <= 2.9) ? 'light' : 
-            (numQuanta <= 5) ? 'medium_wt' : (numQuanta <= 8) ? 'heavy' : 'huge';   
+        const wts = qids.map(qid => qid < 32 ? 1 : 1.4142);
+        const wt = wts.reduce((a, b) => a + b, 0);
+        
+        const text = (wt < 1) ? 'zero' : (wt <= 1.5) ? 'very_light' : (wt <= 2.9) ? 'light' : 
+            (wt <= 5) ? 'medium_wt' : (wt <= 8) ? 'heavy' : 'huge';     
 
         return new Label(text, null);
     }
@@ -9753,7 +9754,7 @@ Namespace.WorkspaceUi = class
                 ctx.fillText(labels[j].toString(), dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*j);
             }
             if (wksp.solution) {
-                const partRole = wksp.solution.guess ? '?' : (wksp.solution.partRoleMap.get(part)?.name || '?');
+                const partRole = wksp.solution.guess ? '?' : (wksp.solution.partRoleMap?.get(part)?.name || '?');
                 ctx.font = dp.partRoleFont;
                 ctx.fillText(partRole.replaceAll('_', '-'), dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*(j+1.5)); 
             }
@@ -9776,9 +9777,9 @@ Namespace.WorkspaceUi = class
      * Draws the thermometer.   
      * 
      */
-    drawThermometer(ctx, dp, temperatureVal)
+    drawThermometer(ctx, dp)
     {
-        temperatureVal = Math.max(0, Math.min(100, this.app.temperature.value.toFixed(0)));
+        const temperatureVal = Math.max(0, Math.min(100, this.app.temperature.value.toFixed(0)));
 
         // Bulb
         ctx.lineWidth = 1;
@@ -9861,7 +9862,7 @@ Namespace.WorkspaceUi = class
             }
             else {
                 ctx.font = dp.solutionFont1;
-                ctx.fillText('I think its:', ...dp.solutionTextLoc1);
+                ctx.fillText("I think it's:", ...dp.solutionTextLoc1);
                 ctx.font = dp.solutionFont2;
                 ctx.fillText('" ' + wksp.solution.wholeName[0] + ' "', ...dp.solutionTextLoc2);
             }
