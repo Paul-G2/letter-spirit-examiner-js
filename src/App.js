@@ -336,7 +336,7 @@
     {
         const [wksp, rack, tmprObj, rptr] = [this.workspace, this.coderack, this.temperature, this.reporter];
 
-        // Disable UI and repoting
+        // Disable UI and reporting
         const cachedVals = {ui: this.ui, animateAnts: Params.AnimateAnts, animateShaker: Params.AnimateShaker};
         this.ui = null;
         Params.AnimateAnts = Params.AnimateShaker = false;

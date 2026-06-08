@@ -455,10 +455,8 @@ Namespace.Knowledge.TipFlipMap = {
  * Curve types.
  */
 Namespace.Knowledge.CurvesList = [    
-    "full_left", "strong_left", "square_left", "slight_left",
-	"straight",
-	"slight_right", "square_right", "strong_right", "full_right",
-     "closure", 
+    "full_left", "strong_left", "square_left", "slight_left", "straight",
+	"slight_right", "square_right", "strong_right", "full_right", "closure", 
 ];
 
 
