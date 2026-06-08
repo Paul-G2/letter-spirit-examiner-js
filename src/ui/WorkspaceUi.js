@@ -171,7 +171,7 @@ Namespace.WorkspaceUi = class
                 ctx.fillText(labels[j].toString(), dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*j);
             }
             if (wksp.solution) {
-                const partRole = wksp.solution.guess ? '?' : (wksp.solution.partRoleMap.get(part)?.name || '?');
+                const partRole = wksp.solution.guess ? '?' : (wksp.solution.partRoleMap?.get(part)?.name || '?');
                 ctx.font = dp.partRoleFont;
                 ctx.fillText(partRole.replaceAll('_', '-'), dp.textStart[0] + dp.columnSkip*i, dp.textStart[1] + dp.lineSkip*(j+1.5)); 
             }
@@ -194,9 +194,9 @@ Namespace.WorkspaceUi = class
      * Draws the thermometer.   
      * 
      */
-    drawThermometer(ctx, dp, temperatureVal)
+    drawThermometer(ctx, dp)
     {
-        temperatureVal = Math.max(0, Math.min(100, this.app.temperature.value.toFixed(0)));
+        const temperatureVal = Math.max(0, Math.min(100, this.app.temperature.value.toFixed(0)));
 
         // Bulb
         ctx.lineWidth = 1;
@@ -279,7 +279,7 @@ Namespace.WorkspaceUi = class
             }
             else {
                 ctx.font = dp.solutionFont1;
-                ctx.fillText('I think its:', ...dp.solutionTextLoc1);
+                ctx.fillText("I think it's:", ...dp.solutionTextLoc1);
                 ctx.font = dp.solutionFont2;
                 ctx.fillText('" ' + wksp.solution.wholeName[0] + ' "', ...dp.solutionTextLoc2);
             }
